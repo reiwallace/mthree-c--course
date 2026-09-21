@@ -7,5 +7,5 @@ target_link_libraries(SetUnion PRIVATE
 )
 
 add_library(printset
-    utils/printset.cpp
+    include/printset.h
 )
