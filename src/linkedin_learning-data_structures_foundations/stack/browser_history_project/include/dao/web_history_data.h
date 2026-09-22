@@ -7,10 +7,10 @@
 class WebHistoryData {
 private:
     // Using a double ended queue to emulate a stack
-    std::deque<std::string>* historyStack;
+    std::deque<std::string> historyStack;
 
 public:
-    WebHistoryData(std::deque<std::string>* stack);
+    WebHistoryData(std::deque<std::string> stack);
     WebHistoryData();
     ~WebHistoryData();
 
@@ -18,7 +18,7 @@ public:
         Adds a website to the stack to be returned to in the future
         @param website - Website address
     */
-    void visitWebsite(std::string website);
+    void visitWebsite(const std::string& website);
 
     /**
         Returns the previously visited website and removes it from the history
