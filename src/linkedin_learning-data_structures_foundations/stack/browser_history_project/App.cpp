@@ -6,10 +6,7 @@ int main() {
     WebHistoryUI* ui = new WebHistoryUI();
     WebHistoryData* data = new WebHistoryData();
 
-    WebHistoryController controller;
-    controller.setData(data);
-    controller.setUi(ui);
-    controller.run();
+    WebHistoryController controller(data, ui);
 
     return 0;
 }
