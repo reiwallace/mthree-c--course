@@ -9,6 +9,8 @@ WebHistoryData::WebHistoryData() {
     historyStack = std::deque<std::string>();
 }
 
+WebHistoryData::~WebHistoryData() {}
+
 void WebHistoryData::visitWebsite(const std::string& website) {
     historyStack.push_back(website);
 }
