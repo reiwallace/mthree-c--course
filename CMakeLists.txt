@@ -10,3 +10,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_subdirectory(
     src/linkedin_learning-data_structures_foundations
 )
+add_subdirectory(src/linkedin_learning-design_patterns)

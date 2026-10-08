@@ -1,0 +1,9 @@
+add_executable(ChainOfResponsibility
+    App.cpp
+    IStringValidator.cpp
+    BaseValidator.cpp
+    NotEmptyValidator.cpp
+    HistoryValidator.cpp
+    LengthValidator.cpp
+    RegexValidator.cpp
+)
