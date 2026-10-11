@@ -48,6 +48,29 @@ public:
     }
 };
 
+class MessageCommand {
+public:
+    virtual ~MessageCommand() {}
+    virtual void execute() = 0;
+    virtual std::string getMessage() = 0;
+};
+
+class SendMessageCommand: public MessageCommand {
+private:
+    ChatGroup *group;
+    std::string message;
+public:
+    SendMessageCommand(ChatGroup *group, const std::string &message): group(group), message(message) {}
+
+    std::string getMessage() override {
+        return message;
+    }
+
+    void execute() override {
+        group->publish(message);
+    }
+};
+
 class ChatUser: public Subscriber {
 private:
     std::string userName;
@@ -68,7 +91,7 @@ class Handler {
 public:
     virtual Handler *setNext(Handler *nextValidator) = 0;
     virtual ~Handler() {};
-    virtual std::string handle(ChatGroup *group, const std::string & message) = 0;
+    virtual std::string handle(MessageCommand* command) = 0;
 };
 
 class BaseHandler : public Handler {
@@ -80,24 +103,24 @@ public:
         next = nextValidator;
         return nextValidator;
     }
-    virtual std::string handle(ChatGroup *group, const std::string & message) override {
+    virtual std::string handle(MessageCommand* command) override {
         if (this->next) {
-            return this->next->handle(group, message);
+            return this->next->handle(command);
         }
-        return "Success!";
+        return "Success!"; 
     }
 };
 
 class NotEmptyValidator: public BaseHandler {
 public:
-    std::string handle(ChatGroup *group, const std::string & message) override {
+    std::string handle(MessageCommand* command) override {
         std::cout << "Checking if empty...\n";
         
-        if (message.empty()) {
+        if (command->getMessage().empty()) {
             return "Please enter a value";
         }
         
-        return BaseHandler::handle(group, message);
+        return BaseHandler::handle(command);
     }
 };
 
@@ -105,21 +128,21 @@ class LengthValidator: public BaseHandler {
     int minLength;
 public:
     LengthValidator(int minLength) : minLength(minLength) {};
-    std::string handle(ChatGroup *group, const std::string & message) override {
+    std::string handle(MessageCommand* command) override {
         std::cout << "Checking if length equals " << minLength << "...\n";
         
-        if (message.length() < minLength) {
+        if (command->getMessage().length() < minLength) {
             return "Please enter a value longer than " + std::to_string(minLength);
         }
         
-        return BaseHandler::handle(group, message);
+        return BaseHandler::handle(command);
     }
 };
 
 class PostMessageHandler: public BaseHandler {
 public:
-    std::string handle(ChatGroup *group, const std::string & message) {
-        group->publish(message);
+    std::string handle(MessageCommand* command) override {
+        command->execute();
         return "Message Sent!";
     }
 };
@@ -145,16 +168,25 @@ int main() {
         ->setNext(new LengthValidator(2))
         ->setNext(new PostMessageHandler);
 
-        std::cout << "Sending empty message:\n" << sendMessageChain->handle(group1, "") << "\n\n";
-    std::cout << "Sending short message:\n" << sendMessageChain->handle(group1, "H") << "\n\n";
-    std::cout << "Sending message to group 1:\n" << sendMessageChain->handle(group1, "Hello everyone in group 1!") << "\n\n";
-    std::cout << "Sending message to group 2:\n" << sendMessageChain->handle(group2, "Hello everyone in group 2!") << "\n\n";
+    MessageCommand *emptyMessage = new SendMessageCommand(group1, "");
+    MessageCommand *shortMessage = new SendMessageCommand(group1, "H");
+    MessageCommand *group1Message = new SendMessageCommand(group1, "Hello everyone in group 1!");
+    MessageCommand *group2Message = new SendMessageCommand(group2, "Hello everyone in group 2!");
+
+    std::cout << "Sending empty message:\n" << sendMessageChain->handle(emptyMessage) << "\n\n";
+    std::cout << "Sending short message:\n" << sendMessageChain->handle(shortMessage) << "\n\n";
+    std::cout << "Sending message to group 1:\n" << sendMessageChain->handle(group1Message) << "\n\n";
+    std::cout << "Sending message to group 2:\n" << sendMessageChain->handle(group2Message) << "\n\n";
 
     delete user1;
     delete user2;
     delete user3;
     delete group1;
     delete group2;
+    delete emptyMessage;
+    delete shortMessage;
+    delete group1Message;
+    delete group2Message;
 
     return 0;
 }
